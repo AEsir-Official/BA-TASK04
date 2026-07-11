@@ -1,0 +1,9 @@
+akshare>=1.18.0
+matplotlib>=3.8
+numpy>=1.26
+pandas>=2.2
+Pillow>=10.0
+reportlab>=4.0
+pdfplumber>=0.11
+pypdf>=5.0
+

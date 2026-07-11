@@ -1,0 +1,16 @@
+{
+  "symbol": "688347",
+  "name": "华虹公司",
+  "data_source": "AkShare stock_zh_a_hist（前复权）",
+  "adjustment": "前复权",
+  "fetch_start": "2024-09-30",
+  "latest_trade_date": "2026-07-10",
+  "report_start": "2025-07-10",
+  "report_end": "2026-07-10",
+  "initial_capital": 500000.0,
+  "risk_per_unit": 0.01,
+  "commission_rate": 0.0003,
+  "stamp_tax_rate": 0.001,
+  "slippage_rate": 0.0005,
+  "lot_size": 100
+}

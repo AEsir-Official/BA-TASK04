@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <meta name="description" content="TASK04 海龟交易策略教学与交互回测实验室">
+  <title>TASK04 海龟策略实验室</title>
+  <link rel="stylesheet" href="assets/styles.css?v=2">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="TASK04 首页">
+      <span class="brand-mark" aria-hidden="true">T</span>
+      <span><strong>TASK04</strong><small>海龟策略实验室</small></span>
+    </a>
+    <nav class="mode-switch" aria-label="页面模式">
+      <button class="mode-button active" type="button" data-mode="lab">回测实验室</button>
+      <button class="mode-button" type="button" data-mode="learn">学习模式</button>
+    </nav>
+    <div class="top-actions">
+      <a href="胡安TASK4.pdf" target="_blank" rel="noopener">PDF 报告</a>
+      <a href="https://github.com/AEsir-Official/BA-TASK04" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </header>
+
+  <main>
+    <section id="lab-mode" class="mode-view active" aria-label="海龟策略回测实验室">
+      <div class="lab-layout">
+        <aside class="control-rail">
+          <div class="rail-heading">
+            <span class="eyebrow">CONTROL DESK</span>
+            <h1>海龟策略回测</h1>
+            <p>调整参数后运行。信号在收盘确认，下一交易日开盘执行。</p>
+          </div>
+
+          <section class="control-section" aria-labelledby="stock-heading">
+            <div class="section-label"><span id="stock-heading">标的股票</span><span id="stock-count">3 只固定股票</span></div>
+            <div id="stock-buttons" class="stock-buttons"></div>
+            <form id="custom-stock-form" class="custom-stock-form">
+              <label for="custom-stock">实验性代码查询</label>
+              <div class="input-command">
+                <input id="custom-stock" name="symbol" inputmode="numeric" maxlength="6" placeholder="输入 6 位 A 股代码" autocomplete="off">
+                <button id="custom-stock-load" type="button" title="临时加载股票">加载</button>
+              </div>
+              <p id="custom-stock-status" class="field-note">第三方接口不可用时，固定股票仍可正常使用。</p>
+            </form>
+          </section>
+
+          <section class="control-section" aria-labelledby="period-heading">
+            <div class="section-label"><span id="period-heading">观察区间</span><span id="period-output">最近 3 年</span></div>
+            <div class="segmented" id="period-buttons">
+              <button type="button" class="active" data-period="3y">3年</button>
+              <button type="button" data-period="1y">1年</button>
+              <button type="button" data-period="6m">6月</button>
+              <button type="button" data-period="3m">3月</button>
+            </div>
+          </section>
+
+          <section class="control-section" aria-labelledby="preset-heading">
+            <div class="section-label"><span id="preset-heading">参数预设</span><span id="preset-output">经典</span></div>
+            <div class="segmented" id="preset-buttons">
+              <button type="button" class="active" data-preset="classic">经典</button>
+              <button type="button" data-preset="fast">短线</button>
+              <button type="button" data-preset="slow">长线</button>
+            </div>
+          </section>
+
+          <section class="control-section parameter-list" aria-labelledby="parameter-heading">
+            <div class="section-label"><span id="parameter-heading">策略参数</span><span>完整海龟系统</span></div>
+            <label class="range-control">入场通道周期 <output data-output="entryWindow">20</output><input data-param="entryWindow" type="range" min="5" max="120" step="1" value="20"></label>
+            <label class="range-control">退出通道周期 <output data-output="exitWindow">10</output><input data-param="exitWindow" type="range" min="3" max="60" step="1" value="10"></label>
+            <label class="range-control">ATR 周期 <output data-output="atrWindow">20</output><input data-param="atrWindow" type="range" min="5" max="60" step="1" value="20"></label>
+            <label class="range-control">加仓步长 <output data-output="addAtr">0.50 ATR</output><input data-param="addAtr" type="range" min="0.25" max="2" step="0.25" value="0.5"></label>
+            <label class="range-control">最大单位 <output data-output="maxUnits">4</output><input data-param="maxUnits" type="range" min="1" max="8" step="1" value="4"></label>
+            <label class="range-control">止损倍数 <output data-output="stopAtr">2.00 ATR</output><input data-param="stopAtr" type="range" min="0.5" max="5" step="0.25" value="2"></label>
+            <label class="range-control">风险预算 <output data-output="riskPct">1.0%</output><input data-param="riskPct" type="range" min="0.1" max="5" step="0.1" value="1"></label>
+          </section>
+
+          <section class="control-section numeric-grid" aria-labelledby="execution-heading">
+            <div class="section-label"><span id="execution-heading">资金与成本</span><span>百分比输入</span></div>
+            <label>初始资金<input data-number="initialCapital" type="number" min="10000" max="10000000" step="10000" value="500000"></label>
+            <label>佣金<input data-number="commissionPct" type="number" min="0" max="0.2" step="0.01" value="0.03"></label>
+            <label>卖出印花税<input data-number="stampTaxPct" type="number" min="0" max="0.2" step="0.01" value="0.10"></label>
+            <label>双边滑点<input data-number="slippagePct" type="number" min="0" max="0.5" step="0.01" value="0.05"></label>
+          </section>
+
+          <button id="run-backtest" class="run-button" type="button"><span>运行回测</span><small>重新计算全部图表</small></button>
+          <p id="parameter-error" class="parameter-error" role="alert"></p>
+        </aside>
+
+        <div class="workspace">
+          <div class="context-line">
+            <div><span class="eyebrow">ACTIVE RESEARCH</span><h2 id="active-stock">正在加载行情…</h2></div>
+            <dl>
+              <div><dt>数据区间</dt><dd id="active-range">--</dd></div>
+              <div><dt>最新交易日</dt><dd id="latest-date">--</dd></div>
+              <div><dt>数据来源</dt><dd id="data-source">--</dd></div>
+            </dl>
+          </div>
+
+          <section id="metrics" class="metric-strip" aria-label="回测指标"></section>
+
+          <section class="signal-brief" aria-labelledby="signal-heading">
+            <div class="signal-copy">
+              <span id="signal-badge" class="signal-badge neutral">等待数据</span>
+              <h2 id="signal-heading">最新策略状态</h2>
+              <p id="signal-description">加载行情后显示当前参数对应的规则状态。</p>
+              <p class="signal-warning">规则条件成立不等于推荐买入，也不代表下一交易日一定上涨。</p>
+            </div>
+            <dl id="signal-facts" class="signal-facts"></dl>
+          </section>
+
+          <section class="chart-section" aria-labelledby="price-chart-heading">
+            <div class="chart-heading"><div><span class="eyebrow">PRICE & SIGNAL</span><h2 id="price-chart-heading">价格、通道与交易动作</h2></div><p>拖动底部时间轴缩放，悬停查看当日价格、ATR、通道与动作。</p></div>
+            <div id="price-chart" class="chart chart-large" role="img" aria-label="价格通道和交易信号图"></div>
+          </section>
+
+          <div class="chart-pair">
+            <section class="chart-section" aria-labelledby="equity-chart-heading">
+              <div class="chart-heading"><div><span class="eyebrow">EQUITY</span><h2 id="equity-chart-heading">策略净值与买入持有</h2></div></div>
+              <div id="equity-chart" class="chart" role="img" aria-label="净值曲线"></div>
+            </section>
+            <section class="chart-section" aria-labelledby="risk-chart-heading">
+              <div class="chart-heading"><div><span class="eyebrow">RISK</span><h2 id="risk-chart-heading">ATR 与策略回撤</h2></div></div>
+              <div id="risk-chart" class="chart" role="img" aria-label="ATR 和回撤图"></div>
+            </section>
+          </div>
+
+          <section class="trade-section" aria-labelledby="trade-heading">
+            <div class="chart-heading"><div><span class="eyebrow">TRADE LEDGER</span><h2 id="trade-heading">已完成交易</h2></div><p id="trade-summary">--</p></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>入场日期</th><th>退出日期</th><th>单位</th><th>股数</th><th>平均入场</th><th>退出价</th><th>净损益</th><th>收益率</th><th>退出原因</th></tr></thead>
+                <tbody id="trade-table-body"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section id="learn-mode" class="mode-view learn-view" aria-label="海龟策略学习模式">
+      <header class="learn-intro">
+        <span class="eyebrow">LEARNING MODE</span>
+        <h1>海龟法则不是一个买点，<br>而是一套完整交易系统。</h1>
+        <p>它用价格突破识别趋势，用 ATR 管理波动和仓位，再以加仓、止损和反向通道完成交易生命周期。</p>
+        <button class="inline-command" type="button" data-switch-to-lab>打开回测实验室</button>
+      </header>
+
+      <article class="lesson-block lesson-wide">
+        <div class="lesson-copy"><span class="lesson-number">01</span><h2>海龟策略用来做什么</h2><p>它不判断股票便宜或昂贵，而是等待价格突破过去一段时间的最高点，确认可能出现的新趋势。信号出现后，系统还会计算买多少、何时加仓、止损放在哪里，以及何时退出。</p></div>
+        <figure><img src="concepts/fig1_turtle_workflow.png" alt="海龟策略完整交易流程"><figcaption>从市场筛选到绩效评估，任何一步都不能被单独理解成投资建议。</figcaption></figure>
+      </article>
+
+      <article class="lesson-block">
+        <div class="lesson-copy"><span class="lesson-number">02</span><h2>高低点通道发现趋势</h2><p>默认 20 日入场通道回答“价格是否创出近期新高”，10 日退出通道回答“原有上涨趋势是否已经破坏”。通道整体向后移动一日，避免使用当日尚未完成的数据。</p><div class="formula">收盘价 &gt; 前 20 日最高价 → 入场条件成立<br>收盘价 &lt; 前 10 日最低价 → 退出条件成立</div></div>
+        <figure><img src="concepts/fig2_donchian_channel.png" alt="唐奇安高低点通道"><figcaption>突破表示技术条件成立，不代表基本面价值判断。</figcaption></figure>
+      </article>
+
+      <article class="lesson-block reverse">
+        <div class="lesson-copy"><span class="lesson-number">03</span><h2>ATR 把波动转化为风险尺度</h2><p>真实波幅同时考虑日内振幅和隔夜跳空。ATR 越大，正常价格波动越宽，因此单位股数应减少、止损距离应放宽。</p><div class="formula">TR = max(H-L, |H-Cprev|, |L-Cprev|)<br>单位股数 = 风险预算 ÷ (止损倍数 × ATR)</div></div>
+        <figure><img src="concepts/fig3_tr_atr.png" alt="真实波幅与平均真实波幅"><figcaption>同一风险预算下，高波动股票应持有更少股数。</figcaption></figure>
+      </article>
+
+      <article class="lesson-block">
+        <div class="lesson-copy"><span class="lesson-number">04</span><h2>只对盈利头寸加仓</h2><p>首次突破只建立第一个单位。价格每向有利方向上涨 0.5 ATR，再增加一个单位，默认最多四个。它与下跌补仓相反：海龟系统只扩大已经被市场证明正确的方向。</p></div>
+        <figure><img src="concepts/fig5_position_pyramid.png" alt="风险定仓和金字塔加仓"><figcaption>风险过滤器先确定单位股数，再允许逐级增加头寸。</figcaption></figure>
+      </article>
+
+      <article class="lesson-block reverse">
+        <div class="lesson-copy"><span class="lesson-number">05</span><h2>动态止损不是固定价格</h2><p>初始止损位于入场价下方 2 ATR。每次加仓后止损只能上移，不能因为波动变大而向下放松。波动大时距离自然变宽，波动小时自动收紧。</p><div class="formula">新止损 = max(原止损, 最新加仓价 - 2 × ATR)</div></div>
+        <figure><img src="concepts/fig4_atr_dynamic_stop.png" alt="ATR 动态止损"><figcaption>止损控制异常逆向运动，反向通道判断趋势是否结束。</figcaption></figure>
+      </article>
+
+      <section class="comparison-section">
+        <span class="eyebrow">TURTLE VS. MA CROSS</span>
+        <h2>海龟突破和金叉死叉有什么关系</h2>
+        <p>两者都属于趋势类规则，但观察对象不同，有时在相近日发出信号，却没有必然关系。</p>
+        <div class="comparison-table" role="table" aria-label="海龟策略和金叉死叉比较">
+          <div class="comparison-row header" role="row"><span>比较项</span><span>海龟法则</span><span>金叉死叉</span></div>
+          <div class="comparison-row" role="row"><span>核心依据</span><span>价格突破前期最高/最低点</span><span>短期均线穿越长期均线</span></div>
+          <div class="comparison-row" role="row"><span>买入条件</span><span>收盘突破入场上轨</span><span>短均线上穿长均线</span></div>
+          <div class="comparison-row" role="row"><span>卖出条件</span><span>跌破退出通道或 ATR 止损</span><span>短均线下穿长均线</span></div>
+          <div class="comparison-row" role="row"><span>仓位管理</span><span>包含 ATR 定仓和盈利加仓</span><span>普通版本通常只解决买卖点</span></div>
+          <div class="comparison-row" role="row"><span>本实验室</span><span>作为实际回测策略</span><span>仅用于教学比较</span></div>
+        </div>
+      </section>
+
+      <section class="signal-meaning-section">
+        <span class="eyebrow">SIGNAL ≠ RECOMMENDATION</span>
+        <h2>看到海龟买入信号，应分成三层理解</h2>
+        <ol>
+          <li><strong>技术条件成立</strong><span>今日收盘价突破了当前参数对应的历史高点。</span></li>
+          <li><strong>策略允许开仓</strong><span>风险预算、最大单位、流动性和数据质量均满足规则。</span></li>
+          <li><strong>真实交易执行</strong><span>按 ATR 计算小仓位并预设止损，而不是看到信号后全仓买入。</span></li>
+        </ol>
+        <div class="timing-note"><strong>时间边界</strong><p>本实验室使用完整日线，因此今日信号在收盘后才确认，并假设下一交易日开盘成交。不能使用收盘后才知道的信号，却假设按当天更早价格成交。</p></div>
+      </section>
+
+      <footer class="learn-footer">
+        <div><span class="eyebrow">COURSE DELIVERABLE</span><h2>阅读完整 TASK04 报告</h2><p>报告包含公式、华虹公司回测、参数敏感性和策略局限。</p></div>
+        <a href="胡安TASK4.pdf" target="_blank" rel="noopener">打开 PDF 报告</a>
+      </footer>
+    </section>
+  </main>
+
+  <div id="loading-overlay" class="loading-overlay" aria-live="polite"><span></span><p>正在加载行情数据</p></div>
+  <script src="assets/vendor/echarts.min.js"></script>
+  <script src="assets/app.js?v=3"></script>
+</body>
+</html>
